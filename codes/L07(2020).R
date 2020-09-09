@@ -122,8 +122,9 @@ filter(new_df, x2 < 8 | x3 > 100)
 
 # slice
 # syntax : slice(tibble,N) where N is an integer
-slice(new_df,3)
-slice(new_df, 3:5)
+slice(new_df,3) # selects the third row
+slice(new_df, 3:5) # slices data for rows 3, 4, and 5
+slice(wage1, seq(2,26,6)) # slices data for rows in the sequence
 
 
 #sort
