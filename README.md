@@ -1,2 +1,2 @@
-# intro-r-workshop
-WSDS0002 [IFMR GSB (2020)
+# ifmr-wsds0002
+Course Material for Introduction to R workshop course.
