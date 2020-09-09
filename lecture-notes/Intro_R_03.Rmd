@@ -1,0 +1,590 @@
+---
+title: Introduction to R
+subtitle: Tidyverse-I
+author:
+  name: Sumit Mishra
+  affiliation: Krea University | WSDS002
+  date: "`r format(Sys.time(), '%d %B %Y')`" ## Or "Lecture no."
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+  html_document:
+    theme: flatly
+    highlight: haddock
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: false
+    keep_tex: true ## Change to true if want keep intermediate .tex file
+    css: preamble.css ## For multi-col environments
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+---
+
+```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(tidyverse, dplyr, plyr, kableExtra, readxl)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#3b3b9a"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+set.seed(921)
+```
+
+# Tibbles
+
+`tibble` is the modern version of $\texttt{R}$'s `data.frame`.
+
+**Example**
+`starwars` dataset that is a built-in tibble.
+```{R, df_starwars, echo = F}
+class(starwars)
+starwars[1:6,c(1:3, 8:10)] %>% kbl() %>% kable_minimal()
+```
+
+## Creation
+
+The `tibble` function creates a `data.frame` like-object.
+You'll generally define tibble by passing the column names and values for the columns.
+```{R, ex_creat1}
+album <- c("Please Please Me", "Rubber Soul", "Magical Mystery Tour")
+year <-  c(1963, 1965, 1967)
+num.tracks <- c(14,14,11)
+beatles.catalog <- tibble(album, year, num.tracks)
+```
+
+You can also create tibbles from other objects (_e.g._, matrices) using the function `as_tibble()`^[Or just plain, old `tibble()`.]
+
+## Importing a dataset
+
+ - `read_csv`: reads csv file into $\texttt{R}$ as a tibble.
+```{r}
+g3 <- read_csv("../data/gdp-growth.csv")
+head(g3)
+```
+
+ - `read_xls`: reads an excel file. You will need to have the package                  `readxl` installed and loaded. 
+```{r}
+col <- read_xls("../data/COL.xls")
+```
+```{r, echo=F}
+janitor::clean_names(col)
+col[1:5,c(1:5)] %>% kbl() %>% kable_minimal()
+```
+
+ - R is pretty versatile in getting all kinds of datasets. For example,
+  you can use `fromJSON()` to read json files from the internet.
+```{r, eval=F}
+cov19district <- jsonlite::fromJSON("https://api.covid19india.org/state_district_wise.json", flatten=T)
+```
+# dplyr
+
+## Intro
+
+It's a package. 
+`dplyr` is not installed by default, so you'll need to install it^[or just `p_load(dplyr)` after loading `pacman`].
+
+
+`dplyr` is part of the [`tidyverse`](https://dplyr.tidyverse.org/), and it follows a grammar-based approach to programming/data work.
+
+
+ - `data` compose the subjects of your stories
+
+ - `dplyr` provides the *verbs* (action words)
+:<br> `filter()`, `mutate()`, `select()`, `group_by()`, `summarize()`, `arrange()`
+
+## Manipulating variables: `mutate()`
+
+`dplyr` streamlines adding/manipulating variables in your data frame.
+
+Function: `mutate(.data, ...)`
+
+ - <span style="color:pink">**Required argument:**</span> `.data`, an existing data frame
+
+ - <span style= "color:pink">**Additional arguments:**</span> Names and values of the new variables
+
+ - <span style= "color:pink">**Output:**</span> An updated data frame
+
+
+**Example**
+Take the data frame
+
+```{R, ex_mutate2_df}
+df <- tibble(x = seq(2,22, length.out = 6),
+             y = sample(1:20, 6))
+```
+
+`mutate()` allows us to create many new variables with one call.
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Code:
+```{R, ex_mutate2, eval = F}
+mutate(.data = df,
+  xy = x * y,
+  y2 = y^2,
+  y_x = round(y/x),
+  is_y_min = y == min(y)
+)
+```
+
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Output:
+```{R, ex_mutate2_result, echo = F}
+# show output
+mutate(.data = df,
+  xy = x * y,
+  y2 = y^2,
+  y_x = round(y/x),
+  is_y_min = y == min(y)
+)
+```
+:::
+::::::
+\  
+
+Please note that `mutate()` returns the original *and* new columns.
+
+
+
+
+## Pipes
+
+Before we go further, let's take a detour to learn about an important operator in tidyverse: pipe `%>%`. 
+A *pipe* in programming allows you to take the output of one function and plug it into another function as an argument/input.
+
+
+$\texttt{R}$'s pipe specifically plugs the returned object to the <span style="color:pink">left</span> of the pipe into the first argument of the function on the <span style="color:pink">right</span> fo the pipe, _e.g._,
+
+```{R, ex_pipe_simple}
+seq(2,22,length.out = 6) %>% mean() %>% round()
+```
+
+Pipes help avoid lots of nested functions, and increase the readability of our code.
+
+
+**Example**
+We will randomly pick six numbers between 5 and 30, compute their average, and round off the average. Remember the workflow.
+$$ \text{Numbers} \rightarrow \text{Sample} \rightarrow \text{Average} \rightarrow \text{Round off} $$
+
+```{R}
+# Save each intermediate step
+numbers <- 5:30
+our_sample <- sample(numbers,6)
+ave.num <- round(mean(our_sample))
+# Lots of nesting
+ave.num <- round(mean(sample(5:30,6)))
+print(ave.num)
+# Piping 💪
+ave.num <- 5:30 %>% sample(6) %>% mean() %>% round()
+print(ave.num)
+```
+
+By default, $\texttt{R}$ pipes the output from the LHS of the pipe into<br>the first argument of the function on the RHS of the pipe.
+
+
+*E.g.*, `x %>% rep(3)` is equivalent to `rep(x, size = 3)`.
+
+
+If you want to pipe output into a different argument, you use a period (`.`). 
+
+**Example**
+Suppose that you have a vector `x` of length 100, and you want to generate a sample `y` of size 10. 
+You can achieve this using pipe in the following different ways.
+
+```{r}
+x <- rnorm(100)
+```
+
+ - Option 1
+```{r}
+y <- x %>% sample(.,10,replace=F)
+print(y)
+```
+ - Option 2
+```{r}
+y <- 10 %>% sample(x,., replace = F)
+print(y)
+```
+ - Option 3
+```{r}
+y <- (replace = F) %>% sample(x,10,.)
+print(y)
+```
+
+
+## `%>%` and `dplyr`
+
+Each `dplyr` function begins with a `.data` argument so that you can easily pipe in data frames (recall: `mutate(.data, ...)`).
+
+The common workflow in `dplyr` will look something like
+
+`new_df <- old_df %>% mutate(cool stuff here)`
+
+which takes `old_df`, does some cool stuff with `mutate()`, and then saves the output of `mutate()` as `new_df`. Saving as a new (or replace the old) data frame helps you use the newly created columns.
+
+**Example**
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Without pipe:
+```{R, eval = F}
+new_df <- 
+  mutate(.data = df,
+         xy = x * y,
+         y2 = y^2,
+         y_x = round(y/x),
+         is_y_min = y == min(y)
+)
+```
+
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Pipe:
+```{R, eval = F}
+# show output
+new_df <- df %>% 
+  mutate(xy = x * y,
+         y2 = y^2,
+         y_x = round(y/x),
+         is_y_min = y == min(y)
+         )
+```
+:::
+::::::
+\  
+
+
+## `select()`
+
+Just as <span style = "color:purple">`filter()`</span> outputs <span style = "color:purple">row-based subsets</span> of your tibble, <span style = "color:purple">`select()`</span> grabs <span style = "color:pink">**column-based subsets**</span>.
+
+You can select columns using their **names**
+<br>`new_df %>% select(xy, x)`
+
+or you can select columns using **helper fuctions**
+<br>`new_df %>% select(starts_with("x"))`
+
+You can also choose to drop a column by prefixing the name of the column by hyphen ($-$).
+```{r}
+beatles.catalog %>%  select(-num.tracks)
+```
+
+Renaming variables can also be done using `select()`. The syntax will be simple: `select(NEW NAME = OLD NAME)`.
+Example:
+```{r}
+starwars %>%
+  select(alias=name, crib=homeworld, sex=gender)
+```
+
+
+### Select helpers
+
+- `starts_with()`: Starts with a prefix
+
+**Example**
+Select country names and GDP variables from `g3`.
+```{r}
+g3 %>% select(`Country Name`, starts_with("YR"))
+```
+
+- `contains()`: Contains a literal string
+
+**Example**
+Pick all those variables containing the word `color` from the `starwars` dataset.
+```{r}
+starwars %>% select(name, contains("color"))
+```
+
+- `num_range()`: Matches a numerical range like x01, x02, x03
+
+**Example** 
+Select GDP data and country names from `g3` during 2005 and 2010.
+```{r}
+g3 %>% select(`Country Name`, num_range("YR",2005:2010))
+```
+- `ends_with()`: Ends with a suffix
+
+- `one_of()`: Matches variable names in a character vector
+
+- `everything()`: Matches all variables
+
+- `last_col()`: Select last variable, possibly with an offset
+
+- `matches()`: Matches a regular expression (a sequence of symbols/characters expressing a string/pattern to be searched for within text)
+
+## `relocate()`
+`relocate()` helps you organize columns by changing column positions.
+
+**Example**
+Take `beatles.catalog`. Reorder columns such that `year` appears first.
+```{r}
+beatles.catalog %>% relocate(year)
+```
+
+You can also reorder columns by their types. For example, if you wish to organize `beatles.catalog` such that numeric objects appear first followed by character, you can do this by writing:
+`beatles.catalog %>% relocate(where(is.numeric))`
+
+## `summarize()`
+
+`summarize()`summarizes variables—you choose the variables and the summaries (_e.g._, `mean()` or `min()`).
+
+
+```{R, ex_summarize}
+df %>% summarize(
+  mean(x), mean(y),
+  min(x), max(x),
+  min(y), max(y)
+)
+```
+returns a $1\times 6$ tibble with the means of `x`, `y`; the minimum of `x` and `y`; and the maximum of `x` and `y`.
+
+
+## `summarize()` and `group_by()`
+
+`group_by()` groups your observations by the variable(s) that you name.
+
+Specifically, `group_by()` returns a *grouped data frame* that you can then feed to `summarize()`, `mutate()` to perform grouped calculations, _e.g._, each group's mean.
+
+
+### Example: Grouped summaries
+
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_group1}
+# Create a new data frame
+our_df <- tibble( 
+  df,
+  grp = rep(c("A", "B"), each = 3)
+)
+```
+
+```{R, ex_group2, echo = F}
+our_df
+```
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_group3, eval = F}
+# For dataset 'our_df'...
+our_df %>%
+  # Group by 'grp'
+  group_by(grp) %>%
+  # Take means of 'x' and 'y'
+  summarize(mean(x), mean(y))
+```
+
+```{R, ex_group4, echo = F}
+our_df %>%
+  group_by(grp) %>%
+  summarize(mean(x), mean(y))
+```
+:::
+::::::
+\  
+
+### Example: Grouped mutation
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_group5}
+# Create a new data frame
+our_df <- data.frame(
+    df,
+    grp = rep(c("A", "B"), each = 3)
+)
+```
+
+```{R, ex_group6, echo = F}
+our_df
+```
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_group7, eval = F}
+# Add grp means for x and y
+our_df %>%
+  group_by(grp) %>%
+  mutate(
+    x_m = mean(x), y_m = mean(y)
+  )
+```
+
+```{R, ex_group8, echo = F}
+our_df %>%
+  group_by(grp) %>%
+  mutate(x_m = mean(x), y_m = mean(y))
+```
+:::
+::::::
+\  
+
+
+## `filter()`
+
+The `filter()` function does what its name implies: it **filters the rows** of your data frame **based upon logical conditions**.
+
+
+
+Example:
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_filter}
+# Create a dataset
+some_df <- data.frame(
+  x = 1:10,
+  y = 11:20
+)
+```
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_filter1}
+# Only keep rows where x is 3
+some_df %>% filter(x == 3)
+```
+:::
+::::::
+\  
+
+Using the same dataset and `filter`, perform the following operations-
+
+ - keep rows where `x >= 6` 
+ 
+ - keep rows where `y/x >= 2`
+ 
+ - keep rows where `12 <= y <= 18`
+
+
+
+
+## `arrange()`
+
+`arrange()` will sort the rows of a data frame using the inputted columns.
+
+$\texttt{R}$ defaults to starting with the "lowest" (smallest) at the top of the data frame. Use a `-` in front of the variable's name to reverse sort.
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_arrange1}
+# As is
+our_df
+```
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R, ex_arrange2}
+# Arrang by y, grp, then -x
+our_df %>% arrange(y, grp, -x)
+```
+:::
+::::::
+\  
+
+## `slice()`
+`arrange()` will subset the data frame using the row index provided by you.
+
+```{r}
+n_rows <- 12:18
+slice(mtcars, n_rows)
+```
+## `distinct()`
+`distinct()` will remove duplicates from your data. 
+```{r}
+name <- c("Siddharth", "Rajshree", "Ankitha", "Ankitha")
+CGPA <- c(3.9, 3.5, 3.4, 3.4)
+age <- c(21, 22, 24, 24)
+school.db <- data.frame(name, CGPA, age)
+```
+```{r}
+print(school.db)
+school.db %>% distinct()
+```
+
+## Chain Operation Revisited
+Let's combine several `dplyr` operations into a chain.
+
+$\text{Select data} \rightarrow \text{Select groups} \rightarrow \text{Select columns} \rightarrow \text{Compute averages for selected columns}$
+
+In this example, we will calculate average height and mass by species and sex.
+```{r}
+starwars %>%                              #select data
+  group_by(species, sex) %>%              #group variables
+  select(height, mass) %>%                #select columns
+  dplyr::summarise(                       #compute averages
+    ave.height = mean(height, na.rm = TRUE),
+    ave.mass = mean(mass, na.rm = TRUE)   
+  ) 
+```
+
+
+# Done for the day
+```{r gif_example, echo = FALSE, out.width='100%'}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('silly03.gif')
+}
+if (fmt == "pdf_document"){
+  message("Sorry, this silly GIF is only available in the the HTML version of the notes.")
+}
+```

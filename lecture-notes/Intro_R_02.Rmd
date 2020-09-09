@@ -1,0 +1,194 @@
+---
+title: Introduction to R
+subtitle: Lists, Arrays, and Dataframes
+author:
+  name: Sumit Mishra
+  affiliation: Krea University | WSDS002
+  date: "`r format(Sys.time(), '%d %B %Y')`" ## Or "Lecture no."
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+  html_document:
+    theme: flatly
+    highlight: haddock
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: false
+    keep_tex: true 
+    css: preamble.css
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+---
+
+```{r setup, include=FALSE}
+pacman::p_load(tidyverse, dplyr, plyr, kableExtra)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+set.seed(921)
+```
+
+## Lists
+The most flexible method to store information in $\texttt{R}$. 
+Consider the following example. I want to store the following variables-
+my name (`my_name`), courses that I teach in the second trimester (`my_courses`), and the days of the week my classes are scheduled (`class_days`)- in a list. We will do this in two steps (but you can always achieve the same in one shot). The first step will be to create the three vectors, and then roll them into a list (`my_list`). 
+```{r}
+# create three vectors
+my_name <- "Sumit"
+my_courses <- c("Statistics with R", "Macroeconomics")
+class_days <- c(1, 3)
+# create the list
+my_list <- list(my_name, my_courses, class_days)
+str(my_list)
+print(my_list)
+```
+Let's familiarize ourselves with our new friend `list`. There are objects within the list `my_list` which can be called by using index within double square parenthesis `[[X]]`. So, for instance,if you want to pull the vector `my_course`, you will write `my_list[[2]]`. Within each vector, there are objects, and these can also be easily gleaned using square parenthesis `[]`. For example, you want to extract the first object of the second vector of the list. 
+Here's how you can achieve this. You should type `my_list[[2]][1]`.
+```{r, echo=F}
+my_list[[2]] ##the second object of the list
+my_list[[2]][1] ##the first object within the second vector of the list
+```
+
+
+## Matrices
+We will now build the same dataset (with information on course and class day) into a matrix form. Any matrix has $m$ rows and $n$ columns. Let's visualize how our matrix will look like: two rows with names of the courses and the days. 
+```{r}
+info_t2 <- c("SwR", "MAC", 1,3)
+mat_t2 <- matrix(info_t2, nrow = 2, ncol = 2)
+print(mat_t2)
+```
+The structure of a matrix is as follows:
+`Matrix Name[Row Index, Column Index]`
+
+ - Any column of a matrix can be called by typing `Matrix Name[, Column Index]`
+ 
+ - Any row of a matrix can be gleaned by writing `Matrix Name[Row Index, ]`
+ 
+ - Please note that the index can be a number or a set of integers.
+Each object within a matrix can also have a name (just like a vector). All you need to do is to supply an argument called `dimnames = ` into `matrix()`. You need to define a list that contains the names. 
+
+```{r}
+mat_t2 <- matrix(info_t2, nrow = 2, ncol = 2, 
+                 dimnames = list(c("R1", "R2"),c("Course", "Day")))
+print(mat_t2)
+```
+## Arrays
+Arrays are generalized forms of matrices. Consider that I want to store information for two terms - term 2 and term 5- onto an object. 
+```{r}
+info_t5 <- c("IEM", "AEC", 2,4)
+mat_t5 <- matrix(info_t5, nrow=2, ncol=2)
+```
+We can use the ``array`` function.
+
+```{r}
+ar_comb <- array(c(mat_t2, mat_t5), dim = c(2,2,2))
+dimnames(ar_comb)[[3]] <- c("Term II", "Term V")
+print(ar_comb)
+```
+## Data Frames
+Data frames in $\texttt{R}$ are the spreadsheet equivalent objects in R with $m$ rows and $n$ columns. Before we jump into `tidyverse`, let's use vectors to create data frames. As an example, let's construct the Beatles catalog (`beatles.catalog`) using vectors containing the names of the albums (`album`), the year (`year`), and the number of tracks (`num.tracks`).
+The function that we will invoke is `data.frame()`. 
+```{r}
+album <- c("Please Please Me", "Rubber Soul", "Magical Mystery Tour")
+year <-  c(1963, 1965, 1967)
+num.tracks <- c(14,14,11)
+beatles.catalog <- data.frame(album, year, num.tracks)
+str(beatles.catalog)
+```
+```{r, echo=F}
+beatles.catalog %>% kbl() %>% kable_minimal()
+```
+You can see that there are three columns and three rows in a data frame.
+Calling a row using index is recommended. A few examples:
+ 
+ - `beatles.catalog[2,]` will get you the second row of the dataset.
+ - `beatles.catlog[2:3,]` returns the second and the third rows.
+
+However, it is recommended that you should use the column name to call a column. We will do this using the Beatles catalog we created. We want to print the names (and the corresponding years) of the albums (let'say).
+```{r}
+beatles.catalog[,"album"]
+beatles.catalog[, c("album", "year")]
+```
+
+It is worth noting here that data frames are just a special case of lists. You can always create a list, and transform that list into a dataframe, except that the resulting data frame will have columns of equal length. 
+Example: I create a list with the following vectors- `name` (of length 1), `course` (of length 3), and `term` (of length 3), and then convert it into a data frame.
+```{r}
+myCourseList <- list(name = "Sumit",
+                     course = c("ITR", "MAC", "IEM"),
+                     term = c("T1", "T2", "T5"))
+df <- data.frame(myCourseList)
+```
+
+```{r, echo=F}
+df %>% kbl() %>% kable_minimal()
+```
+
+### Simple operations on data frames
+
+ - `names()`: glance at the column names. You can also use it to set new               names for the columns. 
+```{r}
+names(df)
+```
+
+ - `dim()`: tells you the dimension of a data frame.
+```{r}
+dim(df)
+```
+ 
+ - `head()`: prints the first six rows of a data frame. 
+```{r}
+head(mtcars) #mtcars is an example dataset in R
+```
+
+ - `tail()`: prints the last six rows of a data frame.
+```{r}
+tail(mtcars)
+```
+
+ - `summary()`: produces the summary statistics for the data frame.
+```{r}
+summary(mtcars)
+```
+ 
+ - adding a new column can be done using:
+ 
+    -  `Data Frame$New Column <- Shazam`
+    -  `Data Frame$New Column <- Operation on Old Column`
+```{r}
+#create number of students enrolled for each of the courses
+df$num_stu <- c(50,60,12)
+```    
+```{r, echo=F}
+df %>% kbl() %>% kable_minimal()
+```
+    
+```{r}
+#creating a new column using existing columns
+a_df <- data.frame(x = sample(1:100,6), y = sample(1:10,6))
+a_df$z <- a_df$x*a_df$y
+```
+```{r, echo=F}
+a_df %>% kbl() %>% kable_minimal()
+```
+
+## Done for the day
+```{r gif_example, echo = FALSE, out.width='100%'}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('silly02.gif')
+}
+if (fmt == "pdf_document"){
+  message("Sorry, this silly GIF is only available in the the HTML version of the notes.")
+}
+```

@@ -1,0 +1,371 @@
+---
+title: Introduction to R
+subtitle: Objects, Functions, and Vectors
+author:
+  name: Sumit Mishra
+  affiliation: Krea University | WSDS002
+  date: "`r format(Sys.time(), '%d %B %Y')`" ## Or "Lecture no."
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+  html_document:
+    theme: flatly
+    highlight: haddock
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: false
+    keep_tex: true ## Change to true if want keep intermediate .tex file
+    css: preamble.css ## For multi-col environments
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+```
+
+## Objects in $\texttt{R}$
+
+Any stored information in R is an object. So, when you type the minimum age for drinking in Maharashtra (like shown below),
+
+```{r}
+25
+```
+the number, while it temporarily exists as an unnamed entity, is not stored in R until you define it as an object.
+You need to assign a name to an object if you want a particular number or a name to be stored in R. The assignment is done via the operator $\gets$.
+```{r}
+min_age <- 25
+
+min_age
+```
+### Classes of Object
+In this course, we will be dealing with the following object types:
+
+#### Numeric
+Any real number in R is stored as a numeric variable. Example:
+```{r}
+a_number <- 2
+```
+
+#### Integer
+Whole numbers and their negative counterparts. R recognizes any number as an integer if you end that number by the letter ’L’.
+Example:
+```{r}
+an_integer <- 2L
+set_integers <- 1:10
+```
+
+#### Character
+Non-numeric variables which can be created by sandwiching any given string between quotes.
+Example:
+```{r}
+my_name <- "anthony gonsalves"
+```
+
+#### Logical
+This object-type defines a true or false condition.
+Example: Suppose you wanted to know if Anthony Gonsalves is $\textit{akela}$ (alone) in $\textit{duniya}$ (world).
+```{r}
+it_is <- TRUE #tragic
+```
+
+#### Factor
+Categorical information are stored as factors. At this point, I will proceed without giving you an example in $\texttt{R}$, but it will help to know that variables like color, gender, race, caste, etc. are typically
+stored as factor objects.
+
+
+### Things to remember
+
+ - $\texttt{R}$ is case-sensitive.
+ 
+ - Names cannot contain any special character except for underscore or period^[The name of any object cannot start with any of the special character including the underscore (`_`)]. 
+ 
+ - $\texttt{R}$ overwrites objects.
+ 
+ - The list of objects can be gleaned by typing `ls()` in the console
+
+
+
+## Functions in $\texttt{R}$
+
+Any work with data is incomplete without functions. Recall your excel lessons where you learnt different functions to perform operations. Same goes for $\texttt{R}$. To execute any task you need to run a function. The setup of a function is very simple. It is of the following format: you need to call the name of the function and sandwich the operation (formally known as the argument) within parentheses. 
+
+$\texttt{NAME OF THE FUNCTION(YOUR ARGUMENTS GO HERE)}$
+
+Let's discuss some basic functions in $\texttt{R}$.
+
+ - `print()`: prints any given object (stored or otherwise).
+```{r}
+print(min_age) #print a number
+print(my_name) #print a character
+```
+
+ - `mean()`: computes the average of any numerical object.
+```{r}
+mean(set_integers)
+```
+ 
+ - `round()`: rounds off a number or a set of numbers.
+```{r}
+round(2.3942)
+```
+ 
+ - `factorial()`: computes factorial for any given number.
+```{r}
+factorial(8)
+``` 
+ - `sample()`: draws a random sample from any given object.
+```{r}
+sample(set_integers, 2)
+```
+As discussed above any given function has arguments. These arguments can be classified into required (without this, you will run into problems) and optional. Let's consider an example. You have a number `2.3942`, and you want it to be rounded off to two decimal places. You will need to specify
+the optional argument `digits = ` into `round()` function^[by default `round()` will use `digits = 0` as you saw in the previous example.].
+```{r}
+round(2.3942, digits = 2)
+```
+You can see the detailed layout of a function by using `args()`. Let's see how this works. 
+```{r}
+args(sample)
+```
+Upon inspecting the output, you can see that the function `sample()` in $\texttt{R}$ has four arguments- `x`, `size`, `replace`,`prob = NULL`. To know more about each of these arguments, you can type `help("sample")` in the console.
+
+
+### Inside an object
+When you create an object in $\texttt{R}$, you should try to know more about the object. One way is to look at the $\texttt{Global Environment}$ window of $\texttt{R Studio}$ which contains the following information: $\texttt{Name, Type, Length, Size, Value}$. 
+
+The other way to do the same (recommended) is to use a set of functions in $\texttt{R}$.
+
+ - `class()`: returns the class of an object.
+```{r}
+class(my_name)
+class(min_age)
+```
+ - `str()`: returns the class of an object, its size, and gives you a
+            quick snapshot of different components of the object. This is
+            especially useful when you are dealing with a large dataset.
+```{r}
+str(my_name)
+str(min_age)
+```
+ - `typeof()`: returns the specific type of object under a given class.
+```{r}
+typeof(my_name)
+typeof(min_age)
+```
+So, you can see that while the class of the object `min_age` is numeric, the type is `double`. 
+
+## Packages in $\texttt{R}$
+Operations in $\texttt{R}$ are usually dependent upon packages in $\texttt{R}$.
+How do you know which package to install? Well, google/stackoverflow is the answer! Let's try to install a package.To install a new package into $\texttt{R}$, you need to use: the following syntax- `install.packages("PACKAGE NAME HERE", OPTIONAL ARGUMENT)`. Once you install a package, you need to load it to use it for your work. The syntax is `library(PACKAGE NAME HERE)`. Please note that your installed packages should be called via `library` command without wrapping the package name into quotes. 
+`tl;dr` version- you need to deploy two commands `install.packages()` and `library()` to use a package.
+We want to cut down our time on this work. Therefore, I recommend that you install a package called `pacman` which will do the two tasks of installing and loading packages in one go as shown below. Once you have installed and loaded the package `pacman`, you are ready to use the function called `p_load()` which lets you install and load as many packages as you want^[If you wish to see the list of installed packages, you can type `installed.packages()` on the console.]! 
+You should run `install.packages("pacman", dependencies = TRUE)` before you compile the following chunk. 
+```{r}
+library(pacman) #loads an existing package
+
+pacman::p_load(dplyr, plyr, 
+               tidyr, tidyverse) #installs + loads many packages together
+```
+
+
+## Folders and Directories in $\texttt{R}$
+
+Our datasets are stored in directories or folders of our machines. We would want $\texttt{R}$ to know about the directory structure, and work from a particular directory known as the working directory. We should be able to set the working directory, call the working directory, list files in the folder, and change the working directory.
+
+ - Setting working directory: 
+   `setwd(FOLDER PATH HERE)`
+ - Print the working directory: 
+  `getwd()`
+ - Change the working directory to machine's default folder:
+  `setwd(~)`
+ - Move the working directory up one folder:
+  `setwd("..")`
+ - List all the files in the working directory: 
+  `list.files()` or `dir()`
+ - List files of certain type (example: xlsx): 
+  `list.files(pattern = "xlsx")`
+
+
+
+## Vectors in $\texttt{R}$
+Vectors are one dimensional objects that represent some information. Examples include age, GDP, profits, etc. You can create:
+
+### Numeric vectors
+```{r}
+nv <- c(10,15,20)
+print(nv)
+```
+The vector `nv` contains three objects, each indexed by the order in which it appears. Any object within a vector can be called by using the following syntax: `VECTOR[INDEX]` where `INDEX` is a whole number^[indexing will work for character vectors as well.].
+```{r}
+nv[1] #prints the first object of nv
+nv[2] #prints the second object of nv
+```
+
+#### Using `rep()` and `seq()` functions
+  - `rep()`: repeat a number or a set of numbers. You will need to
+             specify two arguments: `x` (the number or the set), `n` 
+             (the number of repetitions)
+  - `seq()`: generates a sequence of numbers. You will need to specify
+             three arguments `from = ` (starting point), `to = ` 
+             (end point), and `by = ` (common difference).
+            
+In the examples below, I have repeated the vector `nv` twice, and generated an arithmetic progression for numbers between 2 and 30 with a common difference of 4. 
+```{r}
+nv.rep <- rep(nv, 2)
+print(nv.rep)
+ap <- seq(from = 2, to = 30, by = 4)
+print(ap)
+```
+
+### Character vectors
+```{r}
+cv <- c("please please me", 
+        "with the beatles", 
+        "a hard day's night")
+```
+### Logical vectors
+```{r}
+lv <- c(TRUE, TRUE, FALSE)
+```
+### Working with logical operators
+When I introduced logical vectors in class, most of you were nonplussed. Logical operators are, however, extremely usefuly because of the fact all of conditional logic rests on the usage of logical operators. For example, you have a large dataset containing information on customers belonging to all geographies, and you want to analyse data for a particular city. Before we learn how to subset and modify vectors, it is important to learn some of the operators. As we saw with the Anthony Gonsalves example, logical operators in $\texttt{R}$ check for condition.
+
+ - $==$: the 'equal' operator
+ 
+ Let's see how this works.
+```{r}
+stu_age <- 23 #someone's age
+stu_age == min_age #check if her age is above legal drinking in Maharashtra
+```
+
+ - $!=$: the `not equal' operator
+ 
+ An example:
+```{r}
+stu_age <- 23 #someone's age
+stu_age != min_age #check if her age is above legal drinking in Maharashtra
+```
+
+ - $\&$ : the `and' operator
+ 
+Let's say that you want to eat out in a restaurant which restricts access to alcohol if you are a man (beside state regulation).
+```{r}
+is_female <- T # you happen to be a woman
+stu_age <- 23 #your age
+is_female == F & stu_age >= 25 #check if you're allowed to drink
+```
+
+ - $|$ : the `or' operator (type $\texttt{Shift + backslash}$ on your
+          keyboard)
+          
+In a university, a professor is eligible for promotion if she publishes more than 4 papers over a period of three years or an average rating of 4 on teaching evaluations.
+```{r}
+num_papers <- 3 #number of papers
+teach_rating <- 4.2 #average rating
+num_papers >= 4 | teach_rating >= 4 #check if eligible for promotion
+```
+
+
+ - `%in%`: the `contained in' operator.
+
+Example: check if the numbers 16 and 18 are contained in the sequence `ap` that we generated earlier.
+```{r}
+c(16,18) %in% ap
+```
+### Working with logical functions
+Apart from logical operators, it is useful to know some logical functions.
+
+ - `any()`: checks if any of the objects meet a condition.
+```{r}
+set_age <- c(20, 23, 26, 29)
+any(set_age >= 25)
+```
+
+ - `all()`: checks if all of the objects meet a particular condition.
+```{r}
+all(set_age >= 25)
+```
+
+ - `which()`: tells you which of the objects of a vector meet a given condition.
+```{r}
+ap %in% c(12,16,18) #this checks whether ap contains those numbers
+which(ap %in% c(12,16,18))
+```
+The output tells you that the fifth object of the vector `ap` is contained in the vector `c(12,16,18)`.
+
+
+### Subsetting a vector
+Now that we have learnt logical operators and functions, we are all set to subset a vector (and create a new vector).
+Consider the following example. To subset, we will use the following syntax: `VECTOR[LOGICAL OPERATION]`.
+```{r}
+# Subsetting a numerical vector
+ap <- seq(2, 56, 6)
+
+ap[ap < 10] # subset where ap is less than 10
+ap[ap > 10] # subset where ap is greater than 10
+ap[ap > 10 & ap < 50] # and condition
+ap[ap >= 10 & ap < 40] # 'and' condition
+ap[ap != 50] # 'not equal to' condition
+ap[ap < 10 | ap > 50] # 'or' condition
+ap[ap > 56] ##in this step, look at the output carefully
+```
+
+### Modifying a vector
+Suppose that you are give a list of Beatles songs, and you notice that someone messed up norwegian wood's year (the actual year is 1965).
+```{r}
+beatles.songs <- c("please please me", 
+                   "magical mystery tour", 
+                   "norwegian wood")
+year <- c(1963, 1967, 1963)
+names(year) <- beatles.songs # the function names() assigns names to objects in a numeric vector
+print(year)
+```
+
+Let's fix it.
+```{r}
+year["norwegian wood"] <- 1965 #fixes the year
+print(year)
+```
+
+### Summarizing a vector
+You can summarize a vector using different functions.
+Consider, as an example, our old friend `ap`.
+
+```{r}
+#Summarizing Vectors
+ap <- seq(2,56,6) # generate a sequence
+class(ap)  #check class
+length(ap) #check length
+max(ap) #check maximum value inside this vector
+min(ap) #check min
+sum(ap) #computes the sum of the AP
+mean(ap) #average of the sequence
+var(ap) #variance of the sequence
+quantile(ap) #quantiles of the vector (default is quartile)
+quantile(ap, probs = seq(0, 1, 0.1)) #percentiles
+summary(ap) #summary statistics
+```
+
+## Done for the day
+```{r gif_example, echo = FALSE, out.width='100%'}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('silly.gif')
+}
+if (fmt == "pdf_document"){
+  message("Sorry, this silly GIF is only available in the the HTML version of the notes.")
+}
+```

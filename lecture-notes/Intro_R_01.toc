@@ -1,0 +1,23 @@
+\contentsline {subsection}{Objects in \(\texttt {R}\)}{1}{section*.2}%
+\contentsline {subsubsection}{Classes of Object}{1}{section*.3}%
+\contentsline {paragraph}{Numeric}{1}{section*.4}%
+\contentsline {paragraph}{Integer}{1}{section*.5}%
+\contentsline {paragraph}{Character}{1}{section*.6}%
+\contentsline {paragraph}{Logical}{2}{section*.7}%
+\contentsline {paragraph}{Factor}{2}{section*.8}%
+\contentsline {subsubsection}{Things to remember}{2}{section*.9}%
+\contentsline {subsection}{Functions in \(\texttt {R}\)}{2}{section*.10}%
+\contentsline {subsubsection}{Inside an object}{3}{section*.11}%
+\contentsline {subsection}{Packages in \(\texttt {R}\)}{4}{section*.12}%
+\contentsline {subsection}{Folders and Directories in \(\texttt {R}\)}{4}{section*.13}%
+\contentsline {subsection}{Vectors in \(\texttt {R}\)}{4}{section*.14}%
+\contentsline {subsubsection}{Numeric vectors}{4}{section*.15}%
+\contentsline {paragraph}{Using \texttt {rep()} and \texttt {seq()} functions}{5}{section*.16}%
+\contentsline {subsubsection}{Character vectors}{5}{section*.17}%
+\contentsline {subsubsection}{Logical vectors}{5}{section*.18}%
+\contentsline {subsubsection}{Working with logical operators}{5}{section*.19}%
+\contentsline {subsubsection}{Working with logical functions}{6}{section*.20}%
+\contentsline {subsubsection}{Subsetting a vector}{6}{section*.21}%
+\contentsline {subsubsection}{Modifying a vector}{7}{section*.22}%
+\contentsline {subsubsection}{Summarizing a vector}{7}{section*.23}%
+\contentsline {subsection}{Done for the day}{8}{section*.24}%
