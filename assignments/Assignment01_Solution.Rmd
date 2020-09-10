@@ -1,0 +1,157 @@
+---
+title: "Introduction to R: Assignment 01"
+author: "YOUR NAME HERE [YOUR ROLL NUMBER HERE]"
+output: html_document
+---
+
+# INSTRUCTIONS AND ADVICE
+
+* **Soft Deadline:** 25 August (8pm)
+* **Hard Deadline:** 26 August (8am)
+* There are ten questions in this assignment. Each question carries two      points.
+* This assignment accounts for 20% of your final grades.
+* You are allowed/encouraged to collaborate with others, but the final
+  submission must be your own original work. Please do write name(s) of
+  your collaborators.
+* The file must be submitted via Canvas in the following format-
+   xxx.Rmd where xxx is your three-digit roll number.
+  
+
+
+# 1
+
+From the excel file shared with you, pick a date from the file,
+create an object storing that date.
+
+
+```{r}
+#### TYPE YOUR CODE HERE
+date.vec <- as.Date("2020-06-25")
+```
+
+
+# 2
+
+Create a vector that represents the total number of covid19 cases for
+at least six different states in the country on your chosen date. 
+You can name it whatever you want.
+
+```{r}
+#### TYPE CODE HERE
+vector1 <- c(80858, 33926, 26210, 34178, 199749, 7493, 22693,53973)
+states <- c("AP", "BI", "MP", "RA", "TN", "JH", "OD", "WB")
+names(vector1) <- states
+print(vector1)
+```
+
+# 3
+
+What is the average number of covid19 cases in your vector? 
+Find out in two ways, with and without using the `mean()` command.
+
+
+```{r}
+#### TYPE CODE HERE
+ave_vector1 <- sum(vector1)/length(vector1)
+print(ave_vector1)
+mean_vector1 <- mean(vector1, na.rm = T)
+print(mean_vector1)
+```
+
+
+# 4
+
+Which of those states has least number of cases? How many cases does it have? (Use an `R` command to find out.)
+
+
+```{r}
+#### TYPE CODE HERE
+print(paste(names(vector1)[which.min(vector1)], 
+            "has", min(vector1), "cases"))
+
+```
+
+# 5
+
+What is the difference in the number of covid19 cases between the worst-affected state and the least affected state (relatively speaking) in your vector? 
+(Again use `R` to find out, and try to be as general as possible in the sense that your code should work even if the elements in your vector, or their order, change.)
+
+```{r}
+#### TYPE CODE HERE
+diff.cases <- max(vector1) - min(vector1)
+print(diff.cases)
+
+
+```
+
+# 6
+
+How many states in your vector have above 10000 cases? 
+(Again, try to ensure your code work even in the case that your vector changes.)
+
+```{r}
+#### TYPE CODE HERE
+print(paste("The number of states with more than 10,000 cases is:",
+            length(vector1[vector1>10000])))
+
+
+```
+
+
+# 7
+Create a new vector that contains cases per 100,000 population. You will need to figure out state populations from Wikipedia. Make sure that the
+numbers in the new vectors are rounded off to one decimal place.
+
+```{r}
+#### TYPE CODE HERE
+pop.states <- c(49577103, 104099452, 
+                72626809, 68548437, 
+                72147030, 32988134, 
+                41974219, 91276115)
+percapitacases <- round(vector1/pop.states*100000, 1)
+
+```
+
+
+# 8
+
+Create a new vector with a random sample of 3 states from your original vector. What is the average number of covid19 cases in this new vector?
+
+```{r}
+#### TYPE CODE HERE
+rand.cases <- sample(vector1, 3)
+mean_rcases <- round(mean(rand.cases),1)
+print(mean_rcases)
+
+```
+
+# 9
+
+Create a new vector where you set the number of cases in your original vector (question number 2) to zero if the number of cases is less than 1000.
+
+```{r}
+#### TYPE CODE HERE
+new_vec <- vector1
+new_vec[new_vec < 1000] = 0
+print(new_vec)
+```
+
+# 10
+
+Generate a vector that contains the logarithm of the number of cases using your original vector (question number 2). List all the vectors you have created in this exercise.
+
+```{r}
+#### TYPE CODE HERE
+log_cases <- log(vector1)
+
+ls()
+```
+
+
+# COLLABORATORS
+Create a vector (and print) containing the names of your collaborators for this assignment.
+```{r}
+#### TYPE CODE HERE
+collaborators <- paste("with", "a little", "help","from my friends")
+print(collaborators)
+```

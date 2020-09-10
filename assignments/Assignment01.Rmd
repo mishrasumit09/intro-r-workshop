@@ -1,0 +1,131 @@
+---
+title: "Introduction to R: Assignment 01"
+author: "YOUR NAME HERE [YOUR ROLL NUMBER HERE]"
+output: html_document
+---
+
+# INSTRUCTIONS AND ADVICE
+
+* **Soft Deadline:** 25 August (8pm)
+* **Hard Deadline:** 26 August (8am)
+* There are ten questions in this assignment. Each question carries two      points.
+* This assignment accounts for 20% of your final grades.
+* You are allowed/encouraged to collaborate with others, but the final
+  submission must be your own original work. Please do write name(s) of
+  your collaborators.
+* The file must be submitted via Canvas in the following format-
+   xxx.Rmd where xxx is your three-digit roll number.
+  
+
+
+# 1
+
+From the excel file shared with you, pick a date from the file,
+create an object storing that date.
+
+
+```{r}
+#### TYPE YOUR CODE HERE
+
+
+```
+
+
+# 2
+
+Create a vector that represents the total number of covid19 cases for
+at least six different states in the country on your chosen date. 
+You can name it whatever you want.
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+# 3
+
+What is the average number of covid19 cases in your vector? 
+Find out in two ways, with and without using the `mean()` command.
+
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+
+# 4
+
+Which of those states has least number of cases? How many cases does it have? (Use an `R` command to find out.)
+
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+# 5
+
+What is the difference in the number of covid19 cases between the worst-affected state and the least affected state (relatively speaking) in your vector? 
+(Again use `R` to find out, and try to be as general as possible in the sense that your code should work even if the elements in your vector, or their order, change.)
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+# 6
+
+How many states in your vector have above 10000 cases? 
+(Again, try to ensure your code work even in the case that your vector changes.)
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+
+# 7
+Create a new vector that contains cases per 100,000 population. You will need to figure out state populations from Wikipedia. Make sure that the
+numbers in the new vectors are rounded off to one decimal place.
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+
+# 8
+
+Create a new vector with a random sample of 3 states from your original vector. What is the average number of covid19 cases in this new vector?
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+# 9
+
+Create a new vector where you set the number of cases in your original vector (question number 2) to zero if the number of cases is less than 1000.
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+# 10
+
+Generate a vector that contains the logarithm of the number of cases using your original vector (question number 2). List all the vectors you have created in this exercise.
+
+```{r}
+#### TYPE CODE HERE
+
+```
+
+
+# COLLABORATORS
+Create a vector (and print) containing the names of your collaborators for this assignment.
+```{r}
+#### TYPE CODE HERE
+
+```
