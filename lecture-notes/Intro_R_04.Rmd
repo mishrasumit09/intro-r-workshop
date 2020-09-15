@@ -1,0 +1,417 @@
+---
+title: Introduction to R
+subtitle: Tidyverse-II
+author:
+  name: Sumit Mishra
+  affiliation: Krea University | WSDS002
+  date: "`r format(Sys.time(), '%d %B %Y')`" ## Or "Lecture no."
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    # fig_width: 7 ## Optional: Set default PDF figure width
+    # fig_height: 6 ## Optional: Set default PDF figure height
+    includes:
+      in_header: preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
+  html_document:
+    theme: flatly
+    highlight: haddock
+    # code_folding: show
+    toc: yes
+    toc_depth: 4
+    toc_float: yes
+    keep_md: false
+    keep_tex: true ## Change to true if want keep intermediate .tex file
+    css: preamble.css ## For multi-col environments
+always_allow_html: true
+urlcolor: blue
+mainfont: cochineal
+sansfont: Fira Sans
+monofont: Fira Code ## Although, see: https://tex.stackexchange.com/q/294362
+---
+
+```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(tidyverse, dplyr, plyr, kableExtra, readxl)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, dpi=300)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#3b3b9a"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+set.seed(921)
+```
+
+# tidyr
+
+## Intro
+
+`tidyr` helps you format the data for your analysis.
+
+The main verbs of `tidyr` that we will discuss are: `pivot_longer()`, `pivot_wider()`, `separate()`, and `unite()`.
+
+## `pivot_longer()`
+You can reshape a 'wide' format data into a long format. Let me explain this via an example^[the older version of `pivot_longer()` is called `gather()`].
+
+```{r}
+# create a tibble:
+classDB <- tibble(name = c("Jaya", "Sushma", "Arun", "Uruj"),
+                  test1 = c(12,20,14,16),
+                  test2 = c(20,15,19,18),
+                  midterm = c(40,47,48,50),
+                  endterm = c(30,24,29,28))
+```
+```{r, echo=F}
+classDB %>% kbl() %>% kable_minimal()
+```
+
+The data frame `classDB` is in wide format. There is one row per each student, and each assessment type (test, and exam) has its own column. What if you want to redo the same table such that we have one row per each assessment type?
+
+To do this, we will use `pivot_longer()` which has three arguments:
+`pivot_long(data, cols, names_to = "new column name" , values_to = "value")`
+
+ - `data`: the data that you wish to reshape.
+ 
+ - `cols`: columns to be 'pivoted'.
+ 
+ - `names_to=`: the column that you want to create to store the old                      column names.
+ 
+ - `values_to=`: the column where you will store the values for the old                  columns.
+ 
+```{r}
+classDB_long <- classDB %>%
+  pivot_longer(test1:endterm, 
+               names_to = "assessment",  # columns stored here
+               values_to = "score") %>%  # values stored here
+  relocate(assessment, name) %>% #cleanup (arrange columns)
+  arrange(assessment,name)       #cleanup (sort by assessment, and name)
+```
+
+```{r, echo=F}
+classDB_long %>% kbl() %>% kable_minimal()
+```
+
+
+## `pivot_wider()`
+
+`pivot_wider()` will transform a dataset from long to wide. Take the following example. You have data on returns for two stocks for many different dates. So, for each stock, you have multiple rows. Should you wish to transform this data such that you have one row per stock, `pivot_wider()` will come handy^[the older version of `pivot_wider()` is called `spread()`]. 
+
+`pivot_wider(data, names_from = name, values_from = value)`
+
+The main arguments of this command are:
+
+ - `data`: the data frame.
+ 
+ - `names_from = name`: the column that will get you the variable name.
+ 
+ - `values_from = value`: the column that will get you the values.
+
+Time to do this in $\texttt{R}$.
+
+```{r}
+stocks <- tibble(
+  year   = c(2018, 2019, 2018, 2019),
+  name    = c("X",  "X",  "Y",  "Y"),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+```
+```{r, echo=F}
+stocks %>% kbl() %>% kable_minimal()
+```
+
+In the above table, there are two rows per stock. We can try to reshape the data such that we have one row per stock and returns corresponding to each year appear as separate columns. 
+
+```{r}
+
+stocks_wide <- stocks %>%
+  pivot_wider(names_from = year, # you want years to be column-ized
+              values_from = return) 
+
+```
+```{r, echo=F}
+stocks_wide %>% kbl %>% kable_minimal()
+```
+
+Here's a GIF that summarizes `pivot()` functions^[This and other GIFs in this set of notes are from Garrick Aden-Buie's excellent `tidyexplain` package. Link:
+https://github.com/gadenbuie/tidyexplain].
+```{r echo=FALSE}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('tidyr-longer-wider.gif')
+}
+if (fmt == "pdf_document"){
+  message("Please check the HTML version to view this GIF.")
+}
+
+```
+
+
+## `separate()`
+
+A problem that people who work with data routinely encounter is that of a column containing information that can be spread out into many columns. For example, consider the university address: `5655 Central Expressway, Sri City, Chittoor, Pincode:517646`. This address contains four different variables: `road`, `area`, `district`, and `pincode`. 
+We will use `separate()` to extract these variables. The function has the following arguments:
+
+  - `data`: the data frame
+  
+  - `col =` the column name
+
+  - `into =` fill in the new column names
+
+  - `sep = "[^[:alnum:]]+"`: choose the separator (comma, semicolon, etc.)
+
+  - `remove = TRUE` (will remove the column by default) 
+  
+  - `convert = FALSE` (will preserve the column type)
+
+
+```{r}
+address <- "5655 Central Expressway, Sri City, Chittoor, Pincode:517646"
+# create a tibble
+uni.address <- tibble(name = "IFMR", address = address)
+print(uni.address)
+# use separate to create the columns
+uni.address %>% separate(address, 
+                         into = c("road", "area", "district", "pincode"), sep = ",")
+```
+The column `address` has been broken into four new variables. Notice that the column itself has gone missing in the process. If you wish to retain the variable, you should add `remove = F` to the command. 
+
+## `unite()`
+`unite()` does the exact opposite of what `separate()` does: it combines multiple columns into one column. Imagine that you have a database with columns for the first names and the last names of students at IFMR. `unite()` will help you create a new variable for the full names of the students. 
+
+```{r}
+itr_stu <- tibble(first.name = c("Gunjan","Rehan","Simran"),
+                  last.name  = c("Agarwal", "Asdaque", "Heerekar"),
+                  rollno = c("062","087","156"))
+print(itr_stu)
+
+# create a new column called full.name
+
+itr_stu %>% unite(full.name, c(first.name, last.name))
+```
+We see that we have been able to create a new column called `full.name`, but the names contain underscore, and the old columns are all gone. We can add the option `sep = " " ` and define a separator. We can also keep the old columns by adding the argument `remove = F` into the command. 
+
+```{r}
+itr_stu %>% unite(full.name, c(first.name, last.name),
+                  sep = " ", 
+                  remove = F)
+```
+
+
+# dplyr Revisited
+
+Finally, we wrap this section up by learning how to merge two datasets in $\texttt{R}$^[`merge()` command will also do the job for you, but I am going to stick to dplyr verbs in this course]. The material that we need to combine any two data frames is known as keys. Keys are nothing but the common columns in the two datasets that you want to match. 
+For any two datasets `df1` and `df2` and a key `var`, we can do
+  
+   - `inner_join(df1, df2, by = var)`: keep the matched rows.
+   
+   - `left_join(df1, df2, by = var)`: keep the matched rows plus the
+                                      unmatched rows from `df1`
+   
+   - `right_join(df1, df2, by = var)`: keep the matched rows plus the                                          unmatched rows from `df2`.
+   
+   - `full_join()`: keep all the rows from the two datasets. 
+
+**Example**
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Dataset 1 (Columns: `ID` and `x`)
+```{R, echo=F}
+# we create two variables x and y
+x <- c("x1", "x2", "x3", "x4", "x5")
+y <- c("y1","y2","y3","y4", "y5")
+# we create two data frames df1 and df2
+# both these datasets contain a common column (key) called
+# ID 
+df1 <- tibble(ID = 1:5, x)
+df2 <- tibble(ID = c(2,4,6,8,10), 
+              y)
+```
+```{R}
+df1
+```
+
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+Dataset 2 (Columns: `ID` and `y`)
+```{R, ex_mutate2_result, echo = F}
+# we create two variables x and y
+x <- c("x1", "x2", "x3", "x4", "x5")
+y <- c("y1","y2","y3","y4","y5")
+# we create two data frames df1 and df2
+# both these datasets contain a common column (key) called
+# ID 
+df1 <- tibble(ID = 1:5, x)
+df2 <- tibble(ID = c(2,4,6,8,10),y)
+```
+```{R}
+df2
+```
+:::
+::::::
+\  
+
+We will use the column `ID` as the key to match the two data frames.
+
+
+## `inner_join()`
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R}
+inner_join(df1,df2, by = "ID")
+```
+
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R echo = F}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('inner_join.gif')
+}
+if (fmt == "pdf_document"){
+  message("Please check the HTML version to view this GIF.")
+}
+```
+:::
+::::::
+\  
+
+Check the dimension of the matched data frame. There are two rows, and three columns. The original data frames had five rows apiece, but only two of those five matched on the variable `ID`.
+
+
+
+## `left_join()`
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R}
+left_join(df1,df2, by = "ID")
+```
+
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R echo = F}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('left_join.gif')
+}
+if (fmt == "pdf_document"){
+  message("Please check the HTML version to view this GIF.")
+}
+```
+:::
+::::::
+\  
+
+Check the dimension of the matched data frame. There are five rows, and three columns, but notice that the new data frame retains all the rows from `df1` and fills the umatched rows for the column `y` as NAs. 
+
+
+
+## `right_join()`
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R}
+right_join(df1,df2, by = "ID")
+```
+
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R echo = F}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('right_join.gif')
+}
+if (fmt == "pdf_document"){
+  message("Please check the HTML version to view this GIF.")
+}
+```
+:::
+::::::
+\  
+
+Check the dimension of the matched data frame. There are five rows, and three columns, but notice that the new data frame retains all the rows from `df2` and fills the umatched rows for the column `x` as NAs. 
+
+
+
+## `full_join()`
+
+:::::: {.columns}
+::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R}
+full_join(df1,df2, by = "ID")
+```
+
+:::
+::: {.column width="4%" data-latex="{0.04\textwidth}"}
+\ 
+
+<!-- an empty Div (with a white space), serving as
+a column separator -->
+:::
+:::::: {.column width="48%" data-latex="{0.48\textwidth}"}
+```{R echo = F}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('full_join.gif')
+}
+if (fmt == "pdf_document"){
+  message("Please check the HTML version to view this GIF.")
+}
+```
+:::
+::::::
+\  
+
+Check the dimension of the matched data frame. There are eight rows, and three columns, but notice that the new data frame retains all the rows from `df1` as well as those from `df2`, filling NAs in the unmatched rows for both `x` and `y`.
+
+
+
+Real-life datasets hardly ever come with nicely-defined keys as seen in the example above. A good deal of time is usually spent on creating or identifying the key while trying to combine datasets. 
+
+
+# Done for the day
+```{r gif_example, echo = FALSE, out.width='100%'}
+fmt = rmarkdown::default_output_format(knitr::current_input())$name
+if (fmt == "html_document"){
+  knitr::include_graphics('silly04.gif')
+}
+if (fmt == "pdf_document"){
+  message("Sorry, this silly GIF is only available in the the HTML version of the notes.")
+}
+```
