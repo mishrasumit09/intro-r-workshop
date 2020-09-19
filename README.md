@@ -1,4 +1,4 @@
-# WSDS0002, Term I (2020)
+# WSDS002, Term I (2020)
 
 Welcome to **Introduction to R** 
 
