@@ -142,9 +142,7 @@ The trouble with the base $\texttt{R}$ graphics function is that it's not very c
 ```{r, echo=FALSE, out.width="100%"}
 knitr::include_graphics("bbplot_example_plots.png")
 ```
-</br>
-</br>
-</br>
+<br><br><br>
 
 `ggplot` represents the grammar of the graphics with the following components or layers:
  
