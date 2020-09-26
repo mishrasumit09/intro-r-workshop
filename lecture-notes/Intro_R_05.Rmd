@@ -6,6 +6,15 @@ author:
   affiliation: Krea University | WSDS002
   date: "`r format(Sys.time(), '%d %B %Y')`" ## Or "Lecture no."
 output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    dev: cairo_pdf
+    fig_width: 4 
+    includes:
+      in_header: preamble.tex ## For multi-col environments
+    pandoc_args:
+        --template=mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
   html_document:
     theme: flatly
     highlight: haddock
@@ -16,15 +25,6 @@ output:
     keep_md: false
     keep_tex: true 
     css: preamble.css
-  pdf_document:
-    latex_engine: xelatex
-    toc: true
-    dev: cairo_pdf
-    fig_width: 4 
-    includes:
-      in_header: preamble.tex ## For multi-col environments
-    pandoc_args:
-        --template=mytemplate.tex ## For affiliation field. See: https://bit.ly/2T191uZ
 always_allow_html: true
 urlcolor: blue
 mainfont: cochineal
@@ -142,6 +142,7 @@ The trouble with the base $\texttt{R}$ graphics function is that it's not very c
 ```{r, echo=FALSE, out.width="100%"}
 knitr::include_graphics("bbplot_example_plots.png")
 ```
+</br>
 </br>
 </br>
 
