@@ -1,0 +1,253 @@
+---
+title: "Introduction to R: Assignment 02"
+author: "YOUR NAME HERE [YOUR ROLL NUMBER HERE]"
+output: html_document
+---
+  
+# INSTRUCTIONS AND ADVICE
+  
+* **Soft Deadline:** 24 September (8am)
+* **Hard Deadline:** 25 September (8am)
+* There are ten questions in this assignment. Each question carries two      points.
+* This assignment accounts for 30% of your final grades.
+* You are allowed/encouraged to collaborate with others, but the final
+  submission must be your own original work. Please do write name(s) of
+  your collaborators.
+* The file must be submitted via Canvas in the following format-
+  xxx.Rmd where xxx is your three-digit roll number.
+* Some guidelines-
+
+  - Please do not put your folder path anywhere in the code.
+
+  - Please avoid tinkering with the structure of the file.
+  
+  - Write your code only in the space provided.
+
+  - Write your name and your roll number at the top in the space
+    provided.
+    
+  - I reserve the right to award a zero in case these guidelines 
+    are not followed.
+
+```{r echo=F, message=F}  
+# Load packages here
+pacman::p_load(tidyverse, readxl)
+set.seed(921)
+
+```
+
+
+Read the csv file in $\texttt{R}$, and answer questions 1-6 using the data `cricdata`.
+
+```{r message=F}
+# Read the data
+cricdata <- read_csv("IndBatRec.csv")
+```
+
+# 1
+
+Clean the following columns `100`, `50`, `0` and assign them standard object names (recall that standard names in $\texttt{R}$ usually start with alphabets). 
+
+```{r}
+# Write your code here
+# old names
+names(cricdata)
+
+# clean up
+cricdata <- cricdata %>%
+  dplyr::rename(
+    hundreds = `100`,
+    fifties = `50`,
+    ducks = `0`,
+    fours = `4s`,
+    sixes = `6s`)
+
+names(cricdata)
+```
+
+
+# 2
+
+Pick a year. Who were the top 5 batsmen (in terms of runs scored) in your chosen year? 
+Calculate the total runs scored by these batsmen.
+
+```{r}
+# Write your code in this space.
+rand_year = sample(cricdata$Year,1)
+top5_ry <- cricdata %>% 
+  filter(Year == rand_year) %>%
+  arrange(desc(Runs)) %>%
+  slice(1:5)
+
+print(top5_ry)
+
+top5_ry %>% summarise(tot.runs = sum(Runs))
+```
+
+# 3 
+Pick a batsman who appears in the data frame at least five times, and calculate the average runs scored by this batsman.
+(Hint: The average runs should be total runs divided by total innings.)
+
+```{r}
+# Write your code in this space. 
+subsetcric <- cricdata %>%
+  group_by(Player) %>%
+  add_tally() %>%
+  filter(n >= 5)
+
+choice_batsman <- sample(subsetcric$Player,1)
+
+print(choice_batsman)
+
+subsetcric %>% 
+  filter(Player == choice_batsman) %>%
+  summarise(ave_runs = sum(Runs)/sum(Inns))
+
+```
+
+# 4
+For each decade starting from the year 1980 (80s, 90s, etc.), print the list of the batsmen who hit the maximum number of sixes.
+```{r}
+# Write your code in this space
+cricdata %>% 
+  filter(Year >=1980) %>%
+  mutate(decade = case_when(Year >= 1980 & Year < 1990 ~ "1980s",
+                            Year >= 1990 & Year < 2000 ~ "1990s",
+                            Year >= 2000 & Year < 2010 ~ "2000s",
+                            Year >= 2010 & Year < 2020 ~ "2010s")) %>%
+  group_by(decade, Player) %>%
+  dplyr::summarize(sixes_tot = sum(sixes, na.rm = T)) %>%
+  arrange(-sixes_tot) %>%
+  slice(1)
+```
+
+# 5
+Choose two years between 1980 and 2019 with a minimum gap of ten years (example: pick 1991 and 2001). Make a data frame for the top run-getter for each year between the two years (including the two years).
+```{r}
+# Write your code in this space
+cricdata %>%
+  filter(Year >= 1995 & Year <= 2005) %>%
+  group_by(Year) %>%
+  arrange(-Runs) %>%
+  slice(1)
+```
+
+
+# 6 
+Use chain to do the following:
+
+ - **Step 1**: Pick five consecutive years (randomly).
+ - **Step 2**: Select name, innings, and runs scored.
+ - **Step 3**: Calculate average runs.
+ - **Step 4**: Sort the data by average runs in descending order.
+
+```{r}
+# Write your code in this space
+cricdata %>%
+  filter(Year %in% 2010:2014) %>%
+  select(Year,Player,Inns,Runs) %>%
+  group_by(Year) %>%
+  dplyr::summarise(ave_runs = round(sum(Runs)/sum(Inns),1)) %>%
+  arrange(-ave_runs)
+
+```
+
+
+# 7 
+
+I have loaded a dataset called `towns`. The dataset contains two columns- `City` (name) and `TOT_P`(population). Create a new column
+called `pop_bin` which takes the following values-
+ 
+ - when `TOT_P` <= 1 lakh : 1
+ 
+ - when `TOT_P` ranges between 1 and 5 lakh: 2
+ 
+ - when `TOT_P` ranges between 5 and 10 lakh: 3
+ 
+ - when `TOT_P` lies between 10 and 30 lakh: 4
+ 
+ - when `TOT_P` >= 30 lakh: 5
+```{r, message=F}
+towns <- read_csv("towns.csv")
+
+# Write your code here
+towns %>% mutate(pop_bin = case_when(
+  TOT_P < 100000 ~ 1,
+  TOT_P >= 100000 & TOT_P < 500000 ~ 2,
+  TOT_P >= 500000 & TOT_P < 1000000 ~ 3,
+  TOT_P >= 1000000 & TOT_P < 3000000 ~ 4,
+  TOT_P >= 3000000 ~ 5))
+```
+
+# 8
+
+Following up on Q7, create a table using the variable `pop_bin` which
+tells us the number of towns in each bin. 
+
+```{r}
+# Write your code here
+towns %>% mutate(pop_bin = 
+                   case_when(
+                     TOT_P < 100000 ~ 1,
+                     TOT_P >= 100000 & TOT_P < 500000 ~ 2,
+                     TOT_P >= 500000 & TOT_P < 1000000 ~ 3,
+                     TOT_P >= 1000000 & TOT_P < 3000000 ~ 4,
+                     TOT_P >= 3000000 ~ 5)) %>%
+  group_by(pop_bin) %>% 
+  tally()
+```
+
+
+# 9
+
+The dataset `evalData` contains the student evaluation data for the course titled "Introduction to a Really Boring Subject" taught by Professor Grumpy.
+Use `pivot_longer` to transform the data into long format. Name the new data frame as `evalDataLong`.
+
+```{r, message=F}
+evalData <- read_csv("courseEval.csv")
+# Write your code here
+evalDataLong <- evalData %>%
+    pivot_longer(cols = starts_with("16"),
+               names_to = "measure", 
+               values_to = "value") %>%
+  na.omit() 
+
+head(evalDataLong)
+
+```
+
+# 10
+From `evalDataLong` pick any one metric and produce a table which looks like the table shown below.
+
+| Question| Rating | Count | Percent |
+| :------------- | :----------: | -----------: | -----------: |
+|1629: Lecture Clarity | 1 | 20 | 20 |
+|1629: Lecture Clarity | 2 | 20 | 20 |
+|1629: Lecture Clarity | 3 | 30 | 30 |
+|1629: Lecture Clarity | 4 | 20 | 20 |
+|1629: Lecture Clarity | 5 | 10 | 10 |
+
+
+```{r}
+# Write your code here
+score.distrib <- evalDataLong %>%
+  filter(measure == "1644: The course as a whole: Interest evoked") %>%
+  group_by(value) %>%
+  tally() %>%
+  mutate(Question = "1644: The course as a whole: Interest evoked",
+         Rating = value,
+         Count = n,
+         Percent=(100*n)/sum(n)) %>%
+  select(-n, -value)
+
+print(score.distrib)
+```
+  
+
+
+# COLLABORATORS
+Create a vector (and print) containing the names of your collaborators for this assignment.
+```{r}
+#### TYPE CODE HERE
+
+```
